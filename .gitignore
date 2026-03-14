@@ -13,6 +13,9 @@
 .Rapp.history
 .Rproj.user/
 
+# RStudio project file
+*.Rproj
+
 # roxygen2 / devtools cache
 *.cache
 doc/
