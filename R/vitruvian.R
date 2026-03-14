@@ -267,8 +267,7 @@ vitruvian <- function(outcomes,
   # ---- 6. Axis limits & grid ----
   y_max <- max(c(plot_df$abs_val, plot_df$ref_abs), na.rm = TRUE)
   y_max <- ceiling(y_max / 10) * 10
-  if (!is.finite(y_max) || y_max == 0) y_max <- 100
-  y_max <- max(y_max, 100)   # always include 100% on the scale
+  if (!is.finite(y_max) || y_max == 0) y_max <- 50
 
   # Major grid at every 10%, minor at every 5%
   major_at <- seq(10, y_max, by = 10)
