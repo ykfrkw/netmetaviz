@@ -1,0 +1,8 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^sample\.R$
+^.*\.xlsx$
+^.*\.png$
+^.*\.docx$
+^\.gitignore$
+^\.DS_Store$

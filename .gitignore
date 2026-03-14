@@ -1,0 +1,35 @@
+# R package build outputs
+*.o
+*.so
+*.dll
+*.Rdata
+*.rda
+*.RData
+*.rds
+
+# R session and history
+.Rhistory
+.RData
+.Rapp.history
+.Rproj.user/
+
+# roxygen2 / devtools cache
+*.cache
+doc/
+Meta/
+
+# Generated output files (sample.R outputs)
+*.png
+*.pdf
+*.svg
+*.docx
+*.xlsx
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temp files
+*~
+*.swp
+*.bak

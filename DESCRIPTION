@@ -1,0 +1,35 @@
+Package: netmetaviz
+Title: Visualization Tools for Network Meta-Analysis
+Version: 0.1.0
+Authors@R:
+    person("Yuki", "Furukawa",
+           email = "furukawa.y.psy@gmail.com",
+           role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-0897-8339"))
+Description: Provides visualization tools for network meta-analysis (NMA)
+    results from the 'netmeta' package. Includes functions for creating
+    color-coded league tables (using CINeMA evidence confidence ratings),
+    Kilim plots (multi-outcome summary tables), Vitruvian plots (absolute
+    effect visualizations), and minimally contextualized evidence frameworks.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
+Imports:
+    netmeta (>= 2.0.0),
+    meta (>= 6.0.0),
+    flextable (>= 0.9.0),
+    officer (>= 0.6.0),
+    openxlsx (>= 4.2.0),
+    geomtextpath (>= 0.1.4),
+    ggplot2 (>= 3.4.0),
+    dplyr (>= 1.1.0),
+    tidyr (>= 1.3.0),
+    purrr (>= 1.0.0),
+    stringr (>= 1.5.0),
+    tibble (>= 3.2.0),
+    tools,
+    stats
+Suggests:
+    testthat (>= 3.0.0),
+    patchwork (>= 1.1.0)
