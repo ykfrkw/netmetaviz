@@ -120,7 +120,6 @@ vitruvian <- function(outcomes,
   })
 
   # ---- 2. Treatment list ----
-  first_x <- outcomes[[1]]$x
   if (is.null(treatments)) {
     treatments <- unique(unlist(lapply(outcomes, function(oc) oc$x$trts)))
   }
@@ -139,8 +138,6 @@ vitruvian <- function(outcomes,
     function(oc) if (!is.null(oc$label)) oc$label else oc$name,
     character(1))
 
-  fmt <- paste0("%.", digits, "f")
-
   # ---- 3. Compute absolute effects, signed p-values, reference rates ----
   rows <- list()
 
@@ -156,6 +153,8 @@ vitruvian <- function(outcomes,
 
     is_binary <- nx$sm %in% c("OR", "RR", "RD")
     is_or     <- nx$sm == "OR"
+    is_rr     <- nx$sm == "RR"
+    is_rd     <- nx$sm == "RD"
     is_smd    <- nx$sm == "SMD"
     is_md     <- nx$sm == "MD"
 
@@ -185,8 +184,8 @@ vitruvian <- function(outcomes,
     } else 0
 
     for (trt in treatments) {
-      is_ref_trt <- (trt == reference)
-      trivial    <- FALSE
+      is_ref  <- (trt == reference)
+      trivial <- FALSE
 
       if (trt == ref) {
         abs_val   <- ref_abs
@@ -202,9 +201,9 @@ vitruvian <- function(outcomes,
 
         if (is_or) {
           ar <- .or_to_ar(exp(te), cer)
-        } else if (nx$sm == "RR") {
+        } else if (is_rr) {
           ar <- cer * exp(te)
-        } else if (nx$sm == "RD") {
+        } else if (is_rd) {
           ar <- cer + te
         } else if (smd_to_or) {
           # Continuous → absolute risk via SMD approximation:
@@ -232,7 +231,7 @@ vitruvian <- function(outcomes,
         ref_abs   = ref_abs,
         signed_pv = signed_pv,
         trivial   = trivial,
-        is_ref    = is_ref_trt,
+        is_ref    = is_ref,
         stringsAsFactors = FALSE
       )
     }
@@ -260,13 +259,9 @@ vitruvian <- function(outcomes,
   n_panels    <- length(trt_order)
   nrow_panels <- ceiling(n_panels / ncol)
   panel_size  <- 4   # inches per panel (width and height)
-  if (is.null(width)) {
-    legend_w <- if (isTRUE(show_legend)) 1.8 else 0
-    width    <- ncol * panel_size + legend_w
-  }
-  if (is.null(height)) {
-    height <- nrow_panels * panel_size
-  }
+  legend_w    <- if (isTRUE(show_legend)) 1.8 else 0
+  if (is.null(width))  width  <- ncol * panel_size + legend_w
+  if (is.null(height)) height <- nrow_panels * panel_size
 
   # Value labels (shown as badges): always displayed as integers
   plot_df$val_label <- ifelse(
@@ -315,9 +310,6 @@ vitruvian <- function(outcomes,
   plot_df$cer_y <- ifelse(!is.na(plot_df$ref_val_label),
                           badge_center_y + cer_dy, NA_real_)
 
-  # Ghost bar height for sector boundary lines
-  plot_df$sector_max <- y_max
-
   # ---- Outcome label arcs: use geom_textpath for true arc-following text ----
   # Each outcome gets its own arc path so the text follows the circle curvature.
   label_arc_df <- do.call(rbind, lapply(seq_len(n_oc), function(k) {
@@ -362,13 +354,10 @@ vitruvian <- function(outcomes,
       grp_colors[common_grps] <- group_colors[common_grps]
     }
 
-    for (i in seq_len(n_oc)) {
-      next_i <- if (i == n_oc) 1L else i + 1L
-      gi <- outcome_groups[i]
-      gn <- outcome_groups[next_i]
-      if (!is.na(gi) && !is.na(gn) && gi != gn)
-        group_bounds_x <- c(group_bounds_x, i + 0.5)
-    }
+    next_idx       <- c(seq(2L, n_oc), 1L)
+    gi             <- outcome_groups
+    gn             <- outcome_groups[next_idx]
+    group_bounds_x <- seq_len(n_oc)[!is.na(gi) & !is.na(gn) & gi != gn] + 0.5
 
     # Group arc labels: path data for geom_textpath (true arc following)
     group_arc_df <- do.call(rbind, lapply(unique_grps, function(grp) {
@@ -388,19 +377,13 @@ vitruvian <- function(outcomes,
   # The band covers y_max to band_top; outcome labels sit within it.
   band_top <- y_max * 1.25
 
-  outer_band_df <- data.frame(
-    outcome_idx = seq_len(n_oc),
-    band_top    = band_top,
-    y_max_val   = y_max,
-    band_color  = if (has_groups) {
-      vapply(outcome_groups, function(g) {
-        if (is.na(g)) "#DCDCDC" else grp_colors[[g]]
-      }, character(1))
-    } else {
-      rep("#DCDCDC", n_oc)
-    },
-    stringsAsFactors = FALSE
-  )
+  band_color_vec <- if (has_groups) {
+    vapply(outcome_groups, function(g) {
+      if (is.na(g)) "#DCDCDC" else grp_colors[[g]]
+    }, character(1))
+  } else {
+    rep("#DCDCDC", n_oc)
+  }
 
   # Interpolated ring data for geom_ribbon: draws only the outer annular
   # ring (y_max to band_top) without covering the inner chart area.
@@ -409,7 +392,7 @@ vitruvian <- function(outcomes,
       x        = seq(i - 0.5, i + 0.5, length.out = 30),
       ymin_val = y_max,
       ymax_val = band_top,
-      fill_col = outer_band_df$band_color[i],
+      fill_col = band_color_vec[i],
       sector   = i,
       stringsAsFactors = FALSE
     )
@@ -555,7 +538,7 @@ vitruvian <- function(outcomes,
   if (show_legend && requireNamespace("patchwork", quietly = TRUE)) {
     leg <- pval_legend_ggplot(base_size = 7, palette = palette)
     p <- patchwork::wrap_plots(p, leg,
-                               widths = c(width - 1.8, 1.8),
+                               widths = c(width - legend_w, legend_w),
                                nrow = 1)
   }
 
