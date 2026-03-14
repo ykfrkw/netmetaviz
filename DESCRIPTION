@@ -11,7 +11,7 @@ Description: Provides visualization tools for network meta-analysis (NMA)
     color-coded league tables (using CINeMA evidence confidence ratings),
     Kilim plots (multi-outcome summary tables), Vitruvian plots (absolute
     effect visualizations), and minimally contextualized evidence frameworks.
-License: MIT + file LICENSE
+License: CC BY-NC 4.0
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1
