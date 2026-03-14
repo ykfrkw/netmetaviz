@@ -26,11 +26,8 @@ Sample data from the **W2I NMA** (Furukawa Y et al. 2024) is bundled for testing
 ## Installation
 
 ```r
-# Install from local source (inside the package directory):
-devtools::install()
-
-# Or load without installing (for development):
-devtools::load_all()
+# Install from GitHub:
+remotes::install_github("ykfrkw/netmetaviz")
 ```
 
 Dependencies: `netmeta`, `meta`, `flextable`, `officer`, `openxlsx`, `ggplot2`, `dplyr`, `tidyr`, `purrr`, `stringr`, `tibble`
@@ -40,6 +37,7 @@ Dependencies: `netmeta`, `meta`, `flextable`, `officer`, `openxlsx`, `ggplot2`, 
 ## Quick start
 
 ```r
+remotes::install_github("ykfrkw/netmetaviz")
 library(netmetaviz)
 
 # Load W2I sample data and build netmeta objects
@@ -203,10 +201,9 @@ color_netgraph(
 
 Creates a multi-outcome summary table. Each cell shows the effect size (± 95% CI) and is colored using a signed p-value gradient or the Schneider-Thoma 2026 scheme.
 
-**Gradient coloring (default `palette = "GrYlRd"`):**
+**Gradient coloring (default `palette = "GrRd"`):**
 
 - Deep green: p < 0.01, favorable direction
-- Golden yellow: p = 1.0, non-significant
 - Deep red: p < 0.01, unfavorable direction
 - White text when p ≤ 0.05
 
@@ -253,7 +250,7 @@ kilim(
 |---|---|---|
 | `sort_by` | `"alphabet"` | Treatment sort order |
 | `trivial_range` | `NULL` | Trivial zone applied to all outcomes |
-| `palette` | `"GrYlRd"` | `"GrYlRd"` / `"GrRd"` / `"SchneiderThoma2026"` |
+| `palette` | `"GrRd"` | `"GrYlRd"` / `"GrRd"` / `"SchneiderThoma2026"` |
 | `file` | `"kilim.docx"` | Output path (`.docx` or `.xlsx`) |
 
 ---
@@ -311,47 +308,13 @@ vitruvian(
 | `ncol` | `NULL` | Number of columns in facet layout |
 | `as_percent` | `TRUE` | Display absolute risks as percentages |
 | `file` | `NULL` | Output path (`.png`, `.pdf`, `.svg`); `NULL` = show in Viewer |
-| `width` / `height` | `8` | Dimensions in inches |
+| `width` | `NULL` | Width in inches. Auto-computed as `ncol × 4 + 1.8` (legend) when `NULL` |
+| `height` | `NULL` | Height in inches. Auto-computed as `ceiling(n_treatments / ncol) × 4` when `NULL` |
 
 ---
+## 6. `min_context()` — Minimally contextualized evidence framework
 
-## 6. Schneider-Thoma 2026 colour scheme
-
-Available in `color_league()` (`palette_type = "SchneiderThoma2026"`) and `kilim()` (`palette = "SchneiderThoma2026"`). Colors cells categorically based on the relationship between the 95% CI and a user-defined trivial (very small) effects zone:
-
-| Color | Condition |
-|---|---|
-| Blue (`#4E88B4`) | Entire 95% CI within the trivial zone |
-| Yellow (`#FFD700`) | Point estimate beyond trivial, CI significant but overlaps trivial |
-| Orange (`#F08000`) | Point estimate **and** entire CI beyond trivial |
-| White | All other cases (non-significant, mixed) |
-
-`trivial_range` must be specified on the same scale as the effect estimates (log scale for OR/RR/HR; raw scale for MD/SMD).
-
-```r
-# League table
-color_league(
-  x             = net,
-  sort_by       = "pscore",
-  palette_type  = "SchneiderThoma2026",
-  trivial_range = log(c(1/1.1, 1.1)),   # OR 0.91–1.10 defined as trivial
-  file          = "league_st2026.xlsx"
-)
-
-# Kilim table
-kilim(
-  outcomes      = list(...),
-  trivial_range = log(c(1/1.1, 1.1)),
-  palette       = "SchneiderThoma2026",
-  file          = "kilim_st2026.xlsx"
-)
-```
-
----
-
-## 7. `min_context()` — Minimally contextualised evidence framework
-
-Classifies treatments into ordered evidence groups versus a reference, following the BMJ minimally contextualised framework (Tikkinen et al. 2021).
+Classifies treatments into ordered evidence groups versus a reference, following the BMJ minimally contextualized framework (Tikkinen et al. 2021).
 
 **Group assignment algorithm:**
 
@@ -400,9 +363,9 @@ table_min_context_multi(
 
 ---
 
-## 8. `part_context()` — Partially contextualised evidence framework
+## 7. `part_context()` — Partially contextualized evidence framework
 
-Classifies treatments by converting effects to an absolute scale and comparing against user-defined clinical threshold(s), following the BMJ partially contextualised framework (Tikkinen et al. 2021).
+Classifies treatments by converting effects to an absolute scale and comparing against user-defined clinical threshold(s), following the BMJ partially contextualized framework (Tikkinen et al. 2021).
 
 ```r
 pc <- part_context(
@@ -443,6 +406,40 @@ Group +1 : ARD ≥ 0.10    (smallest worthwhile difference achieved)
 ```
 
 ---
+## 8. Schneider-Thoma 2026 colour scheme
+
+Available in `color_league()` (`palette_type = "SchneiderThoma2026"`) and `kilim()` (`palette = "SchneiderThoma2026"`). Colors cells categorically based on the relationship between the 95% CI and a user-defined trivial (very small) effects zone:
+
+| Color | Condition |
+|---|---|
+| Blue (`#4E88B4`) | Entire 95% CI within the trivial zone |
+| Yellow (`#FFD700`) | Point estimate beyond trivial, CI significant but overlaps trivial |
+| Orange (`#F08000`) | Point estimate **and** entire CI beyond trivial |
+| White | All other cases (non-significant, mixed) |
+
+`trivial_range` must be specified on the same scale as the effect estimates (log scale for OR/RR/HR; raw scale for MD/SMD).
+
+```r
+# League table
+color_league(
+  x             = net,
+  sort_by       = "pscore",
+  palette_type  = "SchneiderThoma2026",
+  trivial_range = log(c(1/1.1, 1.1)),   # OR 0.91–1.10 defined as trivial
+  file          = "league_st2026.xlsx"
+)
+
+# Kilim table
+kilim(
+  outcomes      = list(...),
+  trivial_range = log(c(1/1.1, 1.1)),
+  palette       = "SchneiderThoma2026",
+  file          = "kilim_st2026.xlsx"
+)
+```
+
+
+---
 
 ## Sample data
 
@@ -475,7 +472,10 @@ net <- build_w2i_netmeta("remission_lt") # netmeta object
 devtools::load_all()    # reload package after editing R/ files
 devtools::document()    # rebuild man/ from roxygen2 comments
 devtools::check()       # R CMD CHECK
-devtools::install()     # install
+devtools::install()     # install locally
+
+# Install latest version from GitHub
+remotes::install_github("ykfrkw/netmetaviz")
 ```
 
 ---

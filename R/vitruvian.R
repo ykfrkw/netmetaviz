@@ -71,8 +71,13 @@
 #'   the plot? Requires the \pkg{patchwork} package. Default \code{TRUE}.
 #' @param file Output file path. \code{NULL} returns the ggplot object.
 #'   Supported extensions: \code{".pdf"}, \code{".png"}, \code{".svg"}.
-#' @param width Plot width in inches (default 12).
-#' @param height Plot height in inches (default 8).
+#' @param width Plot width in inches. \code{NULL} (default) auto-computes as
+#'   \code{ncol * 4} inches (plus 1.8 inches for the legend when
+#'   \code{show_legend = TRUE}), so each panel is always 4 inches wide
+#'   regardless of \code{ncol}.
+#' @param height Plot height in inches. \code{NULL} (default) auto-computes as
+#'   \code{ceiling(n_treatments / ncol) * 4} inches, so each panel is always
+#'   4 inches tall regardless of \code{ncol}.
 #' @return A \code{ggplot} object (invisibly if \code{file} is specified).
 #' @export
 #'
@@ -100,8 +105,8 @@ vitruvian <- function(outcomes,
                       palette      = "GrYlRd",
                       show_legend  = TRUE,
                       file         = NULL,
-                      width        = 12,
-                      height       = 8) {
+                      width        = NULL,
+                      height       = NULL) {
 
   # ---- 1. Setup ----
   if (!is.null(fixed)) {
@@ -250,6 +255,18 @@ vitruvian <- function(outcomes,
   trt_order          <- c(reference, setdiff(treatments, reference))
   trt_labels_ordered <- trt_display[trt_order]
   plot_df$trt_label  <- factor(plot_df$trt_label, levels = trt_labels_ordered)
+
+  # ---- Auto-compute width / height to keep each panel a fixed 4×4-inch square ----
+  n_panels    <- length(trt_order)
+  nrow_panels <- ceiling(n_panels / ncol)
+  panel_size  <- 4   # inches per panel (width and height)
+  if (is.null(width)) {
+    legend_w <- if (isTRUE(show_legend)) 1.8 else 0
+    width    <- ncol * panel_size + legend_w
+  }
+  if (is.null(height)) {
+    height <- nrow_panels * panel_size
+  }
 
   # Value labels (shown as badges): always displayed as integers
   plot_df$val_label <- ifelse(

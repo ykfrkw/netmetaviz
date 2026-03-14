@@ -295,7 +295,7 @@ color_netgraph(
 # 4. kilim() — Kilim plot: 4アウトカム同時表示 --------------------------------
 #
 #   各行 = 治療、各列 = アウトカム。
-#   palette = "GrYlRd" / "GrRd"  : signed p-value による連続グラデーション
+#   palette = "GrRd" (default) / "GrYlRd"  : signed p-value による連続グラデーション
 #     セル色 = 有効方向の signed p-value (緑 = 有益、赤 = 有害、青 = trivial)
 #   palette = "SchneiderThoma2026": CI と trivial_range の関係による4値カテゴリ色
 #     Blue   : CI 全体が trivial 範囲内（臨床的に trivial）
@@ -502,6 +502,9 @@ kilim(
 # cer を指定しない場合（または cer = "metaprop"）は meta::metaprop()（GLMM）で
 # reference arm 事象率を自動推定。単純平均は cer = "simple"。
 # 論文値と一致させる場合は数値を明示的に指定する（以下の例）。
+#
+# width / height は省略すると ncol と治療数から自動算出（1パネル = 4×4 インチ）。
+# 例: 3治療 × ncol=3 → 1行 → width = 3*4+1.8 = 13.8, height = 1*4 = 4
 
 vitruvian(
   outcomes = list(
@@ -540,9 +543,8 @@ vitruvian(
   ),
   reference = "Pharmacotherapy",
   digits    = 1,
-  ncol      = 3,
-  width     = 12,    # Viewer 表示サイズ（インチ）
-  height    = 5
+  ncol      = 3
+  # width / height 省略 → 自動算出
 )
 
 ## 5b. trivial_range 付き（OR 0.91–1.10 → 青）— PNG ファイルに保存
@@ -561,9 +563,8 @@ vitruvian(
   trivial_range = log(c(1/1.1, 1.1)),
   digits        = 1,
   ncol          = 3,
-  file          = "vitruvian_4outcomes_trivial.png",
-  width         = 12,
-  height        = 5
+  file          = "vitruvian_4outcomes_trivial.png"
+  # width / height 省略 → 自動算出
 )
 
 ## 5c. PNG 保存（group なし・trivial なし）
@@ -581,9 +582,8 @@ vitruvian(
   reference = "Pharmacotherapy",
   digits    = 1,
   ncol      = 3,
-  file      = "vitruvian_4outcomes.png",
-  width     = 12,
-  height    = 5
+  file      = "vitruvian_4outcomes.png"
+  # width / height 省略 → 自動算出
 )
 
 
@@ -894,75 +894,6 @@ pc_lt_noN <- part_context(
   n_thresholds = NULL
 )
 print(pc_lt_noN)
-
-# ============================================================================= -----
-# 8. vitruvian_ego() — EGO レイアウト（1 パネル = 1 治療薬）
-#    Ostinelli et al. スタイル: アウトカムが放射スポーク、治療薬がパネル
-# =============================================================================
-
-## 8a. 基本（CINeMA カラーあり）— Viewer に表示
-vitruvian_ego(
-  outcomes = list(
-    list(
-      x            = net_lt,
-      name         = "remission_lt",
-      label        = "Remission (LT)",
-      small_values = "undesirable",
-      cer          = 0.28
-    ),
-    list(
-      x            = net_dlt,
-      name         = "dropout_lt",
-      label        = "Dropout (LT)",
-      small_values = "desirable",
-      cer          = 0.20
-    )
-  ),
-  reference = "Pharmacotherapy",
-  cinema    = cinema_path,
-  ncol      = 3
-)
-
-## 8b. PNG 保存（CINeMA なし・デフォルト青バー）
-vitruvian_ego(
-  outcomes = list(
-    list(
-      x            = net_lt,
-      name         = "remission_lt",
-      label        = "Remission (LT)",
-      small_values = "undesirable",
-      cer          = 0.28
-    ),
-    list(
-      x            = net_dlt,
-      name         = "dropout_lt",
-      label        = "Dropout (LT)",
-      small_values = "desirable",
-      cer          = 0.20
-    )
-  ),
-  reference = "Pharmacotherapy",
-  ncol      = 5,
-  width     = 12,
-  height    = 5
-)
-
-## 8c. カスタムパレット（EGO オリジナルに近い紫系）
-vitruvian_ego(
-  outcomes = list(
-    list(x = net_lt, name = "remission_lt", label = "Remission (LT)",
-         small_values = "undesirable", cer = 0.28)
-  ),
-  reference = "Pharmacotherapy",
-  cinema    = cinema_path,
-  palette   = c(
-    "High"     = hcl.colors(5, "Purples", rev = TRUE, alpha = 0.7)[2],
-    "Moderate" = hcl.colors(5, "Purples", rev = TRUE, alpha = 0.7)[3],
-    "Low"      = hcl.colors(5, "Purples", rev = TRUE, alpha = 0.7)[4],
-    "Very low" = hcl.colors(5, "Purples", rev = TRUE, alpha = 0.7)[5]
-  ),
-  ncol = 3
-)
 
 # =============================================================================
 # End of sample.R
